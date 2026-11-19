@@ -1,9 +1,30 @@
-data/
-weights/
-checkpoints/
+# ---- Project-specific (anchored to repo root with a leading /) ----
+# Large inputs and upstream code: never tracked
+/data/
+/weights/
+/checkpoints/
+/external/
+/cache/
+
+# Model weights / checkpoints anywhere
 *.pth
 *.pt
+*.ckpt
+*.safetensors
+
+# Large result arrays and archives (configs, metrics json/csv and figures stay tracked)
 results/**/*.npy
+*.npz
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+*.zip
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -21,9 +42,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
-parts/
 sdist/
 var/
 wheels/

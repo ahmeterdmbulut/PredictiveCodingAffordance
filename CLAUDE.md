@@ -28,6 +28,23 @@ improvement in object-category recognition on the same images?
 - Degradations (TEST images only): gaussian_noise, gaussian_blur, occlusion;
   4 severities + clean, calibrated on validation so category accuracy drops
   roughly 10/25/40/60 % of its clean value.
+## PC hyperparameters (beta = ffm, lambda = fbm, alpha = erm)
+- Candidate sets: (a) fixed set from Choksi 2021 Sec. 2.2: beta = 0.8,
+  lambda = 0.1, alpha = 0.01; (b) PVGG16 tuned set from Appendix A.7 Table S2.
+  (Upstream code disagrees with itself: PVGG16SeparateHP defaults, get_model()
+  overrides and the mce script all use different values - do not trust them.)
+- Both sets are tried in the Gate 1 positive control on ImageNet val. The set
+  used for all affordance experiments is chosen there and frozen before looking
+  at any IIT-AFF/UMD test data.
+- Gradient scaling: the paper (App. A.4) describes scaled error gradients, but
+  predify2021's pvgg16_shared.py uses plain PCoder while config_PVGG16.toml sets
+  gradient_scaling = true (PCoderN). Test both in the positive control and keep
+  the one that reproduces the paper.
+- Hyperparameters are float32 (MPS has no float64; upstream set_hyperparams()
+  uses float64).
+- Feature drift: log per-PCoder ||rep(t) - rep(0)|| / ||rep(0)|| on clean val
+  images at every timestep, to separate "feedback suppresses detail" from
+  "decoder sees off-distribution features".
 ## Metrics
 - Primary: mIoU excluding background and per-class F1. Accumulate TP/FP/FN over
   the whole test set per class, then compute (no per-image averaging).
@@ -52,6 +69,16 @@ Optional if time: PEfficientNetB0; CORnet-S as an external recurrent reference.
 ## Gates
 - Gate 1: Predify weights load and the Gaussian-noise gain reproduces.
   If not -> Plan B2: small 3-layer CNN with PC dynamics (Alamia et al., 2021).
+  Target: Choksi 2021 Table S4, PVGG16 top-1, t = 0 -> t = 15:
+  sigma 0: 71.63 -> 71.47; 0.5: 35.61 -> 38.59; 0.75: 16.69 -> 18.46;
+  1.0: 5.59 -> 7.05. Pass if t = 0 accuracies are close and the gain has the
+  same sign and rough size. The positive control runs t = 0..15 (affordance
+  experiments stay t = 0..10).
+  Noise convention (predify2021 manifold_projection/calculate_corr_dists.py
+  L75-79, L128, commit e9684141): N(0, sigma) added AFTER ImageNet Normalize
+  (normalized-image units), no clamping. Indirect evidence: the repo has no
+  Gaussian-noise accuracy script. Use our own seeded generator (upstream
+  reseeds the global RNG every batch).
 - Gate 2: decoder beats the object-mask baseline, seeds agree, and on
   clean images score(t = 10) is close to score(t = 0). If not -> Plan B1:
   image-level multi-label affordance prediction (mAP).
@@ -78,13 +105,16 @@ notes.md   my own notes (do not edit unless asked)
 - One module per task. Plan first, then implement, then show me how to verify it.
 - Keep functions small, typed and commented, but not overly-commented.  State tensor shapes in comments.
 - Fixed seeds everywhere. Every run saves its config next to its results.
+- Every script has an `if __name__ == "__main__":` guard (DataLoader workers
+  use spawn on both macOS and Windows).
 - Never choose hyperparameters, timesteps or thresholds on the test set. Use a
   validation split held out from training (IIT-AFF has none).
 - Add a small, hand-checkable test for every metric.
 - When unsure about Predify internals, read the code in external/ and cite the
   file and line instead of guessing.
 ## Key references
-- Choksi et al. 2021, Predify, arXiv:2106.02749 (Eq. 2, Appendix A.1-A.2).
+- Choksi et al. 2021, Predify, arXiv:2106.02749 (Eq. 2, Sec. 2.2, Appendix A.1-A.2,
+  A.4, A.7 Table S2, Table S4).
 - Alamia et al. 2021, feedback and predictive coding, arXiv:2106.04225.
 - Tang et al. 2018, recurrent pattern completion, arXiv:1706.02240.
 - Nguyen et al. 2017, IIT-AFF; Myers et al. 2015, UMD Part Affordance.
