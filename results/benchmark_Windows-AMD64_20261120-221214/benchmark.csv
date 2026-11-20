@@ -1,0 +1,6 @@
+device,batch_size,T,status,t0_s_per_image,pc_step_s_per_image,total_s_per_image_T,pc_step_over_t0,peak_mem_gb,mem_kind
+cuda,1,15,ok,0.03746,0.03953,0.6304,1.06,1.24,max_allocated
+cuda,8,15,ok,0.02466,0.02617,0.4173,1.06,2.21,max_allocated
+cuda,16,15,ok,0.02356,0.02508,0.3997,1.06,3.52,max_allocated
+cuda,24,15,ok,0.02311,0.06077,0.9347,2.63,4.82,max_allocated
+cuda,32,15,ok,0.0283,0.18081,2.7405,6.39,6.13,max_allocated

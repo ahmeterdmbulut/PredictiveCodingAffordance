@@ -1,0 +1,34 @@
+{
+  "devices": [
+    "cuda"
+  ],
+  "batch_sizes": [
+    1,
+    8,
+    16,
+    24,
+    32
+  ],
+  "T": 15,
+  "pcoder_type": "PCoderN",
+  "hp_set": "fixed",
+  "repeats": 2,
+  "seed": 0,
+  "weights_dir": "C:\\Users\\aebul\\OneDrive\\Desktop\\PredictiveCodingAffordance\\weights\\predify\\weights_pvgg16_imagenet",
+  "external_dir": "C:\\Users\\aebul\\OneDrive\\Desktop\\PredictiveCodingAffordance\\external",
+  "out_root": "C:\\Users\\aebul\\OneDrive\\Desktop\\PredictiveCodingAffordance\\results",
+  "torch": "2.14.1+cu130",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "python": "3.11.18",
+  "cuda_device": "NVIDIA GeForce RTX 3060 Laptop GPU",
+  "c_sqrt": {
+    "cuda": [
+      340.19024658203125,
+      67.88519287109375,
+      132.8973388671875,
+      176.50836181640625,
+      227.17218017578125
+    ]
+  },
+  "notes": "times exclude warm-up; pc_step = mean over t=1..T; MPS/CPU memory sampled after each step; t0 also computes each PCoder's prd and grd (predify/modules/base.py L124-130), so it costs about one PC step, not one plain VGG16 pass"
+}
