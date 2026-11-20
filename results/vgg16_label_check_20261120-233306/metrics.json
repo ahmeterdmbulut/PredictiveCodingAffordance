@@ -1,0 +1,22 @@
+{
+  "n_images": 200,
+  "top1": 0.695,
+  "top5": 0.93,
+  "name_mismatches": [
+    {
+      "index": 134,
+      "hf": "crane",
+      "torchvision": "crane bird"
+    },
+    {
+      "index": 517,
+      "hf": "crane2",
+      "torchvision": "crane"
+    },
+    {
+      "index": 639,
+      "hf": "maillot, tank suit",
+      "torchvision": "maillot tank suit"
+    }
+  ]
+}

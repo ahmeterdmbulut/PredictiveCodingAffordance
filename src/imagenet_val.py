@@ -60,6 +60,13 @@ def build_index(parquet_dir: Path = DEFAULT_PARQUET_DIR) -> list[ValImage]:
     return sorted(index, key=lambda e: e.val_id)
 
 
+def class_names(parquet_dir: Path = DEFAULT_PARQUET_DIR) -> list[str]:
+    """The 1000 ClassLabel names stored in the shards' Hugging Face metadata."""
+    shard = next(iter(sorted(parquet_dir.glob("validation-*.parquet"))))
+    meta = json.loads(pq.read_schema(shard).metadata[b"huggingface"])
+    return meta["info"]["features"]["label"]["names"]
+
+
 def check_index(index: list[ValImage]) -> None:
     """Full split: 50,000 unique ids 1..50000, labels 0..999, 50 images per class."""
     assert [e.val_id for e in index] == list(range(1, N_VAL + 1)), "val ids are not exactly 1..50000"
