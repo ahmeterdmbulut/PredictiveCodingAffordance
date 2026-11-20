@@ -1,0 +1,4 @@
+device,batch_size,T,status,t0_s_per_image,pc_step_s_per_image,total_s_per_image_T,pc_step_over_t0,peak_mem_gb,mem_kind
+mps,1,15,ok,0.26207,0.27482,4.3843,1.05,1.49,driver_allocated
+mps,8,15,ok,0.28341,0.28645,4.5802,1.01,3.64,driver_allocated
+mps,32,15,does not fit (swapping),,,,,,

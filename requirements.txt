@@ -1,0 +1,11 @@
+# Python 3.11. Versions as installed on the Mac (2026-11-20).
+# Windows/CUDA: install torch + torchvision from the CUDA wheel index first
+# (see https://pytorch.org/get-started/locally/), then the rest of this file.
+torch==2.15.0
+torchvision==0.29.2
+numpy==2.4.6
+pillow==13.0.0
+toml==0.10.2     # imported by upstream predify / predify2021
+psutil==7.2.2    # benchmark memory on CPU
+pytest==9.2.0
+# Then: pip install -e external/predify --no-deps

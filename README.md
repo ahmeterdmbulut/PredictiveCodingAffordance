@@ -1,5 +1,29 @@
 # PredictiveCodingAffordance
 
+## Environment
+
+```
+conda create -n pcaff --override-channels -c conda-forge python=3.11
+conda activate pcaff
+pip install -r requirements.txt        # Windows: CUDA torch wheel first, see requirements.txt
+pip install -e external/predify --no-deps
+python -m pytest tests -v -s           # loader tests (cpu, mps / cuda if available)
+python scripts/benchmark_pvgg16.py --devices cuda   # throughput + memory
+```
+
+### Sanity images (data/sanity_images/, git-ignored)
+
+Five public JPEGs used only to check that t = 0 predictions match plain VGG16:
+
+```
+mkdir -p data/sanity_images && cd data/sanity_images
+curl -L -o dog.jpg    https://github.com/pytorch/hub/raw/master/images/dog.jpg
+curl -L -o cat.jpg    https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg
+curl -L -o bridge.jpg https://upload.wikimedia.org/wikipedia/commons/0/0c/GoldenGateBridge-001.jpg
+curl -L -o banana.jpg https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg
+curl -L -o pizza.jpg  https://upload.wikimedia.org/wikipedia/commons/a/a3/Eq_it-na_pizza-margherita_sep2005_sml.jpg
+```
+
 ## Upstream versions
 
 Upstream repos are cloned into `external/` (git-ignored, never edited).

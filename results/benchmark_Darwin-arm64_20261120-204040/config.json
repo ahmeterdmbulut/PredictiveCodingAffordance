@@ -1,0 +1,32 @@
+{
+  "devices": [
+    "cpu"
+  ],
+  "batch_sizes": [
+    1,
+    8,
+    32
+  ],
+  "T": 15,
+  "pcoder_type": "PCoderN",
+  "hp_set": "fixed",
+  "repeats": 2,
+  "seed": 0,
+  "weights_dir": "/Users/ahmeterdembulut/Desktop/cmpe58I materials/PredictiveCodingAffordance/weights/predify/weights_pvgg16_imagenet",
+  "external_dir": "/Users/ahmeterdembulut/Desktop/cmpe58I materials/PredictiveCodingAffordance/external",
+  "out_root": "/Users/ahmeterdembulut/Desktop/cmpe58I materials/PredictiveCodingAffordance/results",
+  "torch": "2.15.0",
+  "platform": "macOS-26.5.2-arm64-arm-64bit",
+  "python": "3.11.18",
+  "cuda_device": null,
+  "c_sqrt": {
+    "cpu": [
+      8.66025447845459,
+      66.79670715332031,
+      135.77554321289062,
+      176.09457397460938,
+      230.71519470214844
+    ]
+  },
+  "notes": "times exclude warm-up; pc_step = mean over t=1..T; MPS/CPU memory sampled after each step; t0 also computes each PCoder's prd and grd (predify/modules/base.py L124-130), so it costs about one PC step, not one plain VGG16 pass"
+}

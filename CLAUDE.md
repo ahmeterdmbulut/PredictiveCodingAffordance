@@ -74,6 +74,14 @@ Optional if time: PEfficientNetB0; CORnet-S as an external recurrent reference.
   1.0: 5.59 -> 7.05. Pass if t = 0 accuracies are close and the gain has the
   same sign and rough size. The positive control runs t = 0..15 (affordance
   experiments stay t = 0..10).
+  Table S4 / Fig. 2a were produced with the "fixed" set (App. A.7), so the
+  primary Gate 1 comparison uses the fixed set. The tuned set was tuned on
+  sigma = 0.5 Gaussian noise, which is in-sample for it.
+  PCoderN implements App. A.4 (gradient x K/sqrt(C), batch-size independent);
+  plain PCoder makes the error step negligible (~B*K/sqrt(C) smaller) and
+  batch-size dependent.
+  Preprocessing: Resize(224) + CenterCrop(224) + ImageNet Normalize, as in
+  Predify (calculate_corr_dists.py L75-79), not torchvision's 256 -> 224.
   Noise convention (predify2021 manifold_projection/calculate_corr_dists.py
   L75-79, L128, commit e9684141): N(0, sigma) added AFTER ImageNet Normalize
   (normalized-image units), no clamping. Indirect evidence: the repo has no
@@ -89,7 +97,9 @@ Optional if time: PEfficientNetB0; CORnet-S as an external recurrent reference.
 - Device-agnostic: pick cuda > mps > cpu automatically, overridable. No hardcoded
   .cuda(). Use pathlib, no Linux-only shell assumptions.
 - PC error correction needs autograd at inference: watch GPU memory, start with
-  small batches.
+  small batches. One PC step costs ~8x a VGG16 forward.
+- Compute rule: one backbone pass per (image, condition, PC variant); all
+  decoder seeds are read out from the same pass.
 - Predify repos live in external/ (git-ignored). Do not edit them; wrap them in
   src/. Record the commit hash used in README.
 - Data in data/, weights in weights/, both git-ignored. Paths come from configs/.

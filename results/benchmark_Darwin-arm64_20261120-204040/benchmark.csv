@@ -1,0 +1,4 @@
+device,batch_size,T,status,t0_s_per_image,pc_step_s_per_image,total_s_per_image_T,pc_step_over_t0,peak_mem_gb,mem_kind
+cpu,1,15,ok,0.40446,0.40873,6.5355,1.01,1.96,process_rss
+cpu,8,15,ok,0.28289,0.29976,4.7793,1.06,2.94,process_rss
+cpu,32,15,does not fit (swapping),,,,,,

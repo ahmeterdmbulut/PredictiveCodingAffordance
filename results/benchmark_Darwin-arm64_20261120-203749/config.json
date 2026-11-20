@@ -1,0 +1,32 @@
+{
+  "devices": [
+    "mps"
+  ],
+  "batch_sizes": [
+    1,
+    8,
+    32
+  ],
+  "T": 15,
+  "pcoder_type": "PCoderN",
+  "hp_set": "fixed",
+  "repeats": 2,
+  "seed": 0,
+  "weights_dir": "/Users/ahmeterdembulut/Desktop/cmpe58I materials/PredictiveCodingAffordance/weights/predify/weights_pvgg16_imagenet",
+  "external_dir": "/Users/ahmeterdembulut/Desktop/cmpe58I materials/PredictiveCodingAffordance/external",
+  "out_root": "/Users/ahmeterdembulut/Desktop/cmpe58I materials/PredictiveCodingAffordance/results",
+  "torch": "2.15.0",
+  "platform": "macOS-26.5.2-arm64-arm-64bit",
+  "python": "3.11.18",
+  "cuda_device": null,
+  "c_sqrt": {
+    "mps": [
+      8.66025447845459,
+      68.48576354980469,
+      136.38365173339844,
+      175.19703674316406,
+      230.908203125
+    ]
+  },
+  "notes": "times exclude warm-up; pc_step = mean over t=1..T; MPS/CPU memory sampled after each step"
+}
