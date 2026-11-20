@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import gc
 import json
+import math
 from functools import lru_cache
 from pathlib import Path
 
@@ -152,9 +153,16 @@ def test_c_sqrt_cpu_equals_cuda() -> None:
     assert cpu == cuda
 
 
+# float32 sqrt of the same C can differ by 1 ulp between platforms (Windows vs macOS), so
+# C_sqrt from a calibration is compared with rtol 1e-6; loaded values stay exact.
+C_SQRT_RTOL = 1e-6
+
+
 def test_c_sqrt_pc1_is_sqrt75() -> None:
     """pcoder1's pmodule is a bare 64->3 5x5 deconv: one input cell changes 3*5*5 = 75 outputs."""
-    assert c_sqrt_values(_net("cpu", "PCoderN"))[0] == torch.tensor(75.0).sqrt().item()
+    record = json.loads(DEFAULT_C_SQRT_PATH.read_text())
+    assert record["c"][0] == 75
+    assert c_sqrt_values(_net("cpu", "PCoderN"))[0] == pytest.approx(math.sqrt(75), rel=C_SQRT_RTOL)
 
 
 def test_c_sqrt_file_reproducible() -> None:
@@ -167,7 +175,8 @@ def test_c_sqrt_file_reproducible() -> None:
     _free_cached_models()  # one more PVGG16 on top of the cache exhausts Windows commit memory
     values = calibrate(x, record["metadata"]["seed"], WEIGHTS_DIR, EXTERNAL_DIR)
     print(f"\n[C_sqrt recalibrated] {values}")
-    assert values == record["c_sqrt"]
+    assert [v * v for v in values] == pytest.approx(record["c"], rel=C_SQRT_RTOL)  # file c is rounded
+    assert values == pytest.approx(record["c_sqrt"], rel=C_SQRT_RTOL)
 
 
 def _sanity_batch() -> tuple[list[str], torch.Tensor]:
