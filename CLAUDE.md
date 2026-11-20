@@ -42,6 +42,18 @@ improvement in object-category recognition on the same images?
   the one that reproduces the paper.
 - Hyperparameters are float32 (MPS has no float64; upstream set_hyperparams()
   uses float64).
+- PCoderN sqrt(C) is fixed, never calibrated at runtime: build_pvgg16 loads it
+  from configs/pcoder_c_sqrt.json (scripts/calibrate_c_sqrt.py: CPU, seed 0,
+  cuDNN off). Upstream runtime calibration counts changed cells with exact !=
+  (predify/modules/base.py L185-220); on CUDA, cuDNN float noise inflates it
+  (pc1 ~340 instead of sqrt(75)). pc1's C = 75 for any input; for pc2-pc5 the
+  measured C depends on the calibration input because each feedback pmodule
+  ends in a ReLU. The official values are calibrated on real ImageNet images
+  (first 16 val images by filename, --input imagenet) to match upstream use,
+  generated before Gate 1. Until then the file holds temporary synthetic values
+  (marked "temporary" in the file).
+- If Gate 1 fails to reproduce the paper, test runtime-calibrated CUDA C values
+  as a diagnostic only.
 - Feature drift: log per-PCoder ||rep(t) - rep(0)|| / ||rep(0)|| on clean val
   images at every timestep, to separate "feedback suppresses detail" from
   "decoder sees off-distribution features".
@@ -91,13 +103,17 @@ Optional if time: PEfficientNetB0; CORnet-S as an external recurrent reference.
   clean images score(t = 10) is close to score(t = 0). If not -> Plan B1:
   image-level multi-label affordance prediction (mAP).
 ## Environment
-- Develop on MacBook (Apple Silicon: mps or cpu); long runs on a Windows desktop
-  with an RTX 3060 (cuda), synced through git (push on Mac, pull and run on
-  Windows); Kaggle as overflow.
+- Develop on MacBook (Apple Silicon: mps or cpu); synced through git (push on
+  Mac, pull and run on Windows). All real experiments (anything reported) run
+  on the Windows machine with the RTX 3060 (6 GB, cuda) only.
 - Device-agnostic: pick cuda > mps > cpu automatically, overridable. No hardcoded
   .cuda(). Use pathlib, no Linux-only shell assumptions.
 - PC error correction needs autograd at inference: watch GPU memory, start with
-  small batches. One PC step costs ~8x a VGG16 forward.
+  small batches. One PC step costs ~8x a plain VGG16 forward pass; t = 0 itself
+  costs about one PC step (it also computes each PCoder's prediction and error
+  gradient, predify/modules/base.py L124-130, PCoderN L255-). Default batch
+  size on the 3060 (6 GB): 16 (32 exceeds 6 GB and spills into shared memory,
+  ~7x slower).
 - Compute rule: one backbone pass per (image, condition, PC variant); all
   decoder seeds are read out from the same pass.
 - Predify repos live in external/ (git-ignored). Do not edit them; wrap them in

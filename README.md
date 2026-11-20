@@ -2,13 +2,51 @@
 
 ## Environment
 
+macOS (development):
+
 ```
 conda create -n pcaff --override-channels -c conda-forge python=3.11
 conda activate pcaff
-pip install -r requirements.txt        # Windows: CUDA torch wheel first, see requirements.txt
+pip install -r requirements.txt
 pip install -e external/predify --no-deps
 python -m pytest tests -v -s           # loader tests (cpu, mps / cuda if available)
-python scripts/benchmark_pvgg16.py --devices cuda   # throughput + memory
+python scripts/benchmark_pvgg16.py --devices cpu mps   # throughput + memory
+```
+
+Windows (RTX 3060 6 GB; all real experiments), PowerShell:
+
+```
+conda create -n pcaff --override-channels -c conda-forge python=3.11
+conda activate pcaff
+pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cu130
+pip install numpy==2.4.6 pillow==13.0.0 toml==0.10.2 psutil==7.2.2 pytest==9.2.0
+pip install -e external/predify --no-deps
+python -m pytest tests -v -s
+python scripts/benchmark_pvgg16.py --devices cuda --batch-sizes 1 8 16 24 32
+```
+
+- Do not run `pip install -r requirements.txt` on Windows: its `torch==2.15.0`
+  pin would replace the CUDA build with the CPU-only wheel from PyPI.
+- Driver 592.00 supports CUDA <= 13.1 (`nvidia-smi`). On 2026-11-20 torch 2.15.0
+  CUDA wheels existed only for cu132, so Windows uses torch 2.14.1+cu130 /
+  torchvision 0.29.1+cu130 (one release behind the Mac). t = 0 still equals
+  plain VGG16 exactly (max|diff| = 0) on cpu and cuda.
+- Use `curl.exe`, not `curl` (a PowerShell alias for Invoke-WebRequest), and
+  `New-Item -ItemType Directory -Force <dir>` instead of `mkdir -p`.
+- Benchmark (T = 15, PCoderN): batch 16 is fastest, 0.40 s/image; batch 32
+  needs 6.1 GB and spills into shared memory
+  (results/benchmark_Windows-AMD64_20261120-221214).
+
+### PCoderN C_sqrt (configs/pcoder_c_sqrt.json)
+
+PCoderN's sqrt(C) is calibrated once on CPU and loaded as fixed values on every
+device (upstream's runtime calibration is inflated by cuDNN noise on CUDA).
+The file in the repo is temporary (synthetic input). Before Gate 1, put the
+ImageNet val images in `data/imagenet_val/` and regenerate it:
+
+```
+python scripts/calibrate_c_sqrt.py --input imagenet --force   # official: first 16 val images
+python scripts/calibrate_c_sqrt.py --input synthetic --force  # temporary: seeded randn
 ```
 
 ### Sanity images (data/sanity_images/, git-ignored)
@@ -23,6 +61,10 @@ curl -L -o bridge.jpg https://upload.wikimedia.org/wikipedia/commons/0/0c/Golden
 curl -L -o banana.jpg https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg
 curl -L -o pizza.jpg  https://upload.wikimedia.org/wikipedia/commons/a/a3/Eq_it-na_pizza-margherita_sep2005_sml.jpg
 ```
+
+Wikimedia answers rapid requests with HTTP 429 and curl then saves the error
+page as the .jpg: add `--fail` and space the downloads out. The tests use
+whatever JPEGs are present (the Windows machine has 4; banana.jpg got 429).
 
 ## Upstream versions
 
@@ -51,7 +93,7 @@ torchvision (`VGG16_Weights.IMAGENET1K_V1`).
 ```
 mkdir -p weights/predify
 curl -L -o weights/predify/weights_pvgg16_imagenet.zip "https://www.dropbox.com/s/8lzp6wfo6n3bymk/weights_pvgg16_imagenet.zip?dl=1"
-cd weights/predify && unzip weights_pvgg16_imagenet.zip
+cd weights/predify && unzip weights_pvgg16_imagenet.zip   # Windows: tar -xf weights_pvgg16_imagenet.zip
 ```
 
 Check with `shasum -a 256 <file>` (macOS) or `Get-FileHash <file>` (Windows):

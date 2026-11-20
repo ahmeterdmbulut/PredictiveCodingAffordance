@@ -1,6 +1,10 @@
 # Python 3.11. Versions as installed on the Mac (2026-11-20).
-# Windows/CUDA: install torch + torchvision from the CUDA wheel index first
-# (see https://pytorch.org/get-started/locally/), then the rest of this file.
+# Windows/CUDA (RTX 3060, driver 592.00 = CUDA <= 13.1), 2026-11-20:
+#   torch 2.15.0 CUDA wheels exist only for cu132, so Windows uses
+#   torch==2.14.1+cu130 and torchvision==0.29.1+cu130 from
+#   https://download.pytorch.org/whl/cu130, then the other pins below one by
+#   one. Do not `pip install -r` this file there: it would replace the CUDA
+#   torch with PyPI's CPU wheel. See README "Environment".
 torch==2.15.0
 torchvision==0.29.2
 numpy==2.4.6
