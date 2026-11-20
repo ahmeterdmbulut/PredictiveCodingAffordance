@@ -42,13 +42,22 @@ python scripts/benchmark_pvgg16.py --devices cuda --batch-sizes 1 8 16 24 32
 
 PCoderN's sqrt(C) is calibrated once on CPU and loaded as fixed values on every
 device (upstream's runtime calibration is inflated by cuDNN noise on CUDA).
-The file in the repo is temporary (synthetic input). Before Gate 1, put the
-ImageNet val images in `data/imagenet_val/` and regenerate it:
+The file in the repo holds the official values (2026-11-20), calibrated on the
+16 ImageNet val images in `configs/imagenet_val_c_sqrt_subset.json`:
+
+| PCoder | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| C_sqrt | 8.660254 (sqrt 75) | 66.949844 | 125.134354 | 168.783661 | 221.532562 |
+
+Do not regenerate it. To reproduce it (the test `test_c_sqrt_file_reproducible`
+does this automatically when the images are present):
 
 ```
-python scripts/calibrate_c_sqrt.py --input imagenet --force   # official: first 16 val images
-python scripts/calibrate_c_sqrt.py --input synthetic --force  # temporary: seeded randn
+python scripts/calibrate_c_sqrt.py --input imagenet --force --out <other path>
 ```
+
+`--input synthetic` (seeded randn) only exists for machines without ImageNet;
+its output is marked temporary and the loader warns about it.
 
 ### ImageNet validation (data/imagenet_val/, git-ignored)
 
@@ -64,6 +73,24 @@ Shards land in `data/imagenet_val/data/validation-000NN-of-00014.parquet`.
 Columns: `image` {bytes, path}, `label` (int, torchvision class order). Rows
 are shuffled; `image.path` keeps the original filename, e.g.
 `ILSVRC2012_val_00027555_n01824575.JPEG`.
+
+Fixed subsets (committed in `configs/`) and their JPEGs (extracted to
+`data/imagenet_val/images/`, original bytes, 274 MB):
+
+```
+python scripts/prepare_imagenet_val.py           # writes both subset files + extracts JPEGs
+python scripts/check_vgg16_labels.py --device cuda
+```
+
+- `imagenet_val_c_sqrt_subset.json`: 16 images, val_id 1..16 (first by filename).
+- `imagenet_val_gate1_subset.json`: 2 per class (2,000), `numpy.random.default_rng(0)`,
+  disjoint from the calibration subset.
+- Label check: plain VGG16 + Predify preprocessing on every 10th Gate 1 image
+  (200): top-1 69.5 %, top-5 93.0 % (Table S4 t = 0: 71.63 %), so HF labels use
+  torchvision's class order (results/vgg16_label_check_20261120-233306).
+
+On another machine, rerunning `prepare_imagenet_val.py --force` must produce the
+same subset files; only the `created` field may differ.
 
 ### Sanity images (data/sanity_images/, git-ignored)
 

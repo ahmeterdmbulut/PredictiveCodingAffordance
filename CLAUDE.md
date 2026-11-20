@@ -48,10 +48,15 @@ improvement in object-category recognition on the same images?
   (predify/modules/base.py L185-220); on CUDA, cuDNN float noise inflates it
   (pc1 ~340 instead of sqrt(75)). pc1's C = 75 for any input; for pc2-pc5 the
   measured C depends on the calibration input because each feedback pmodule
-  ends in a ReLU. The official values are calibrated on real ImageNet images
-  (first 16 val images by filename, --input imagenet) to match upstream use,
-  generated before Gate 1. Until then the file holds temporary synthetic values
-  (marked "temporary" in the file).
+  ends in a ReLU. The file holds the official values (generated 2026-11-20,
+  before Gate 1), calibrated on real ImageNet images to match upstream use:
+  the 16 val images in configs/imagenet_val_c_sqrt_subset.json (val_id 1..16,
+  first by original filename; --input imagenet). C_sqrt = 8.660 (sqrt 75),
+  66.950, 125.134, 168.784, 221.533. Do not regenerate them.
+- ImageNet val: HF ILSVRC/imagenet-1k (parquet, revision 49e2ee26), labels in
+  torchvision order (plain VGG16 top-1 69.5 % on 200 Gate 1 images). Fixed
+  subsets in configs/ (src/imagenet_val.py, scripts/prepare_imagenet_val.py):
+  c_sqrt calibration (16) and Gate 1 (2 per class = 2,000, seed 0, disjoint).
 - If Gate 1 fails to reproduce the paper, test runtime-calibrated CUDA C values
   as a diagnostic only.
 - Feature drift: log per-PCoder ||rep(t) - rep(0)|| / ||rep(0)|| on clean val
