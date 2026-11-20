@@ -1,0 +1,125 @@
+{
+ "source": {
+  "hf_repo": "ILSVRC/imagenet-1k",
+  "revision": "49e2ee26f3810fb5a7536bbf732a7b07389a47b5",
+  "split": "validation"
+ },
+ "rule": "first 16 val images by original filename (val_id 1..16)",
+ "n_images": 16,
+ "n_classes": 16,
+ "created": "2026-11-20T23:28:41",
+ "images": [
+  {
+   "val_id": 1,
+   "filename": "ILSVRC2012_val_00000001_n01751748.JPEG",
+   "label": 65,
+   "shard": "validation-00006-of-00014.parquet",
+   "row": 327
+  },
+  {
+   "val_id": 2,
+   "filename": "ILSVRC2012_val_00000002_n09193705.JPEG",
+   "label": 970,
+   "shard": "validation-00010-of-00014.parquet",
+   "row": 3495
+  },
+  {
+   "val_id": 3,
+   "filename": "ILSVRC2012_val_00000003_n02105855.JPEG",
+   "label": 230,
+   "shard": "validation-00011-of-00014.parquet",
+   "row": 69
+  },
+  {
+   "val_id": 4,
+   "filename": "ILSVRC2012_val_00000004_n04263257.JPEG",
+   "label": 809,
+   "shard": "validation-00013-of-00014.parquet",
+   "row": 1831
+  },
+  {
+   "val_id": 5,
+   "filename": "ILSVRC2012_val_00000005_n03125729.JPEG",
+   "label": 516,
+   "shard": "validation-00010-of-00014.parquet",
+   "row": 958
+  },
+  {
+   "val_id": 6,
+   "filename": "ILSVRC2012_val_00000006_n01735189.JPEG",
+   "label": 57,
+   "shard": "validation-00012-of-00014.parquet",
+   "row": 2996
+  },
+  {
+   "val_id": 7,
+   "filename": "ILSVRC2012_val_00000007_n02346627.JPEG",
+   "label": 334,
+   "shard": "validation-00008-of-00014.parquet",
+   "row": 3188
+  },
+  {
+   "val_id": 8,
+   "filename": "ILSVRC2012_val_00000008_n02776631.JPEG",
+   "label": 415,
+   "shard": "validation-00009-of-00014.parquet",
+   "row": 2153
+  },
+  {
+   "val_id": 9,
+   "filename": "ILSVRC2012_val_00000009_n03794056.JPEG",
+   "label": 674,
+   "shard": "validation-00010-of-00014.parquet",
+   "row": 2701
+  },
+  {
+   "val_id": 10,
+   "filename": "ILSVRC2012_val_00000010_n02328150.JPEG",
+   "label": 332,
+   "shard": "validation-00000-of-00014.parquet",
+   "row": 1198
+  },
+  {
+   "val_id": 11,
+   "filename": "ILSVRC2012_val_00000011_n01917289.JPEG",
+   "label": 109,
+   "shard": "validation-00004-of-00014.parquet",
+   "row": 2201
+  },
+  {
+   "val_id": 12,
+   "filename": "ILSVRC2012_val_00000012_n02125311.JPEG",
+   "label": 286,
+   "shard": "validation-00005-of-00014.parquet",
+   "row": 2009
+  },
+  {
+   "val_id": 13,
+   "filename": "ILSVRC2012_val_00000013_n02484975.JPEG",
+   "label": 370,
+   "shard": "validation-00006-of-00014.parquet",
+   "row": 3503
+  },
+  {
+   "val_id": 14,
+   "filename": "ILSVRC2012_val_00000014_n04065272.JPEG",
+   "label": 757,
+   "shard": "validation-00007-of-00014.parquet",
+   "row": 3066
+  },
+  {
+   "val_id": 15,
+   "filename": "ILSVRC2012_val_00000015_n03496892.JPEG",
+   "label": 595,
+   "shard": "validation-00000-of-00014.parquet",
+   "row": 759
+  },
+  {
+   "val_id": 16,
+   "filename": "ILSVRC2012_val_00000016_n02066245.JPEG",
+   "label": 147,
+   "shard": "validation-00009-of-00014.parquet",
+   "row": 2269
+  }
+ ]
+}
