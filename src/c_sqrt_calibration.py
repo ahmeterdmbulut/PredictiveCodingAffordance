@@ -20,11 +20,11 @@ from typing import Literal
 import torch
 from PIL import Image
 
+from src.imagenet_val import C_SQRT_SUBSET_PATH, load_subset
 from src.load_predify import ROOT, build_pvgg16, c_sqrt_values, predify_preprocess
 
 CalibrationInput = Literal["synthetic", "imagenet"]
 N_IMAGES: dict[str, int] = {"synthetic": 4, "imagenet": 16}
-IMAGE_SUFFIXES = {".jpeg", ".jpg", ".png"}
 
 
 def synthetic_images(n: int, seed: int) -> torch.Tensor:
@@ -32,14 +32,16 @@ def synthetic_images(n: int, seed: int) -> torch.Tensor:
     return torch.randn(n, 3, 224, 224, generator=torch.Generator().manual_seed(seed))
 
 
-def imagenet_files(val_dir: Path, n: int) -> list[Path]:
-    """First n images in val_dir sorted by filename (ILSVRC2012_val_00000001.JPEG, ...)."""
-    if not val_dir.is_dir():
-        raise FileNotFoundError(f"ImageNet val directory not found: {val_dir}")
-    files = sorted(p for p in val_dir.iterdir() if p.suffix.lower() in IMAGE_SUFFIXES)
-    if len(files) < n:
-        raise FileNotFoundError(f"Need {n} images in {val_dir}, found {len(files)}.")
-    return files[:n]
+def imagenet_files(subset_path: Path, image_dir: Path) -> list[Path]:
+    """The calibration images listed in subset_path (configs/imagenet_val_c_sqrt_subset.json:
+    val_id 1..16, first by original filename), as extracted JPEGs in image_dir."""
+    files = [image_dir / e.filename for e in load_subset(subset_path)]
+    assert len(files) == N_IMAGES["imagenet"], f"{subset_path.name} lists {len(files)} images"
+    missing = [p.name for p in files if not p.exists()]
+    if missing:
+        raise FileNotFoundError(f"{len(missing)} images missing in {image_dir} (run "
+                                f"scripts/prepare_imagenet_val.py), e.g. {missing[0]}")
+    return files
 
 
 def load_images(paths: list[Path]) -> torch.Tensor:
@@ -91,7 +93,8 @@ def make_record(values: list[float], input_kind: CalibrationInput, seed: int,
     }
     if input_kind == "imagenet":
         assert files is not None and val_dir is not None
-        meta.update(val_dir=_repo_relative(val_dir), files=[p.name for p in files],
+        meta.update(subset=_repo_relative(C_SQRT_SUBSET_PATH),
+                    val_dir=_repo_relative(val_dir), files=[p.name for p in files],
                     preprocessing="Resize(224) + CenterCrop(224) + ImageNet Normalize")
     else:
         meta["preprocessing"] = "none: seeded randn in normalized-image space"
