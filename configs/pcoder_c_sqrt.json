@@ -1,0 +1,32 @@
+{
+  "temporary": true,
+  "note": "Temporary: synthetic input, only so tests can run. Regenerate with --input imagenet before Gate 1.",
+  "c_sqrt": [
+    8.660253524780273,
+    68.0167236328125,
+    138.8972625732422,
+    176.31874084472656,
+    228.69943237304688
+  ],
+  "c": [
+    75.0,
+    4626.275,
+    19292.45,
+    31088.298,
+    52303.43
+  ],
+  "metadata": {
+    "input": "synthetic",
+    "n_images": 4,
+    "seed": 0,
+    "device": "cpu",
+    "cudnn_enabled": false,
+    "torch": "2.14.1+cu130",
+    "upstream": {
+      "predify": "7538a683a383c85dd5909e7aea2b868e931f39ff",
+      "predify2021": "e9684141087cf4c5fb7ce7af437edfe4f6970bc5"
+    },
+    "created": "2026-11-20T22:34:11",
+    "preprocessing": "none: seeded randn in normalized-image space"
+  }
+}

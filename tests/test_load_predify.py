@@ -1,6 +1,8 @@
 """Tests for src/load_predify.py. Run with: python -m pytest tests/test_load_predify.py -v -s"""
 from __future__ import annotations
 
+import gc
+import json
 from functools import lru_cache
 from pathlib import Path
 
@@ -9,9 +11,10 @@ import torch
 from PIL import Image
 from torchvision.models import VGG16_Weights, vgg16
 
+from src.c_sqrt_calibration import calibrate, inputs_from_record
 from src.load_predify import (
-    HP_SETS, N_PCODERS, REP_SHAPES, build_pvgg16, c_sqrt_values,
-    iterate_timesteps, predify_preprocess, run_timesteps,
+    DEFAULT_C_SQRT_PATH, HP_SETS, N_PCODERS, REP_SHAPES, build_pvgg16, c_sqrt_values,
+    iterate_timesteps, load_c_sqrt_file, predify_preprocess, run_timesteps,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +41,7 @@ torch.backends.cudnn.benchmark = False  # same conv kernels for both models on C
 
 @lru_cache(maxsize=None)
 def _net(device: str, pcoder_type: str, hp_set: str = "fixed") -> torch.nn.Module:
-    torch.manual_seed(0)  # PCoderN's C calibration uses the global RNG
+    torch.manual_seed(0)  # deterministic construction (random init before weights load)
     return build_pvgg16(weights_dir=WEIGHTS_DIR, external_dir=EXTERNAL_DIR,
                         pcoder_type=pcoder_type, hp_set=hp_set, device=torch.device(device))
 
@@ -46,6 +49,14 @@ def _net(device: str, pcoder_type: str, hp_set: str = "fixed") -> torch.nn.Modul
 @lru_cache(maxsize=None)
 def _reference_vgg(device: str) -> torch.nn.Module:
     return vgg16(weights=VGG16_Weights.IMAGENET1K_V1).eval().to(device)
+
+
+def _free_cached_models() -> None:
+    _net.cache_clear()
+    _reference_vgg.cache_clear()
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 
 def _synthetic_images(n: int, device: str) -> torch.Tensor:
@@ -119,9 +130,44 @@ def test_run_timesteps_smoke(device: str, pcoder_type: str) -> None:
     c_sqrt = c_sqrt_values(net)
     print(f"\n[C_sqrt] {device} {pcoder_type}: {c_sqrt}")
     if pcoder_type == "PCoderN":
-        assert c_sqrt is not None and all(c > 0 for c in c_sqrt)
+        assert c_sqrt == load_c_sqrt_file()
     else:
         assert c_sqrt is None
+
+
+@pytest.mark.parametrize("device", DEVICES)
+def test_c_sqrt_fixed(device: str) -> None:
+    """Loaded sqrt(C) equals the configs file and is not recalibrated by running PC steps."""
+    expected = load_c_sqrt_file()
+    net = _net(device, "PCoderN")
+    assert c_sqrt_values(net) == expected
+    run_timesteps(net, _synthetic_images(2, device), T=2)
+    assert c_sqrt_values(net) == expected
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="no CUDA")
+def test_c_sqrt_cpu_equals_cuda() -> None:
+    cpu, cuda = c_sqrt_values(_net("cpu", "PCoderN")), c_sqrt_values(_net("cuda", "PCoderN"))
+    print(f"\n[C_sqrt] cpu  {cpu}\n[C_sqrt] cuda {cuda}")
+    assert cpu == cuda
+
+
+def test_c_sqrt_pc1_is_sqrt75() -> None:
+    """pcoder1's pmodule is a bare 64->3 5x5 deconv: one input cell changes 3*5*5 = 75 outputs."""
+    assert c_sqrt_values(_net("cpu", "PCoderN"))[0] == torch.tensor(75.0).sqrt().item()
+
+
+def test_c_sqrt_file_reproducible() -> None:
+    """Recalibrating on CPU with the input the file records gives the same values exactly."""
+    record = json.loads(DEFAULT_C_SQRT_PATH.read_text())
+    try:
+        x = inputs_from_record(record)
+    except FileNotFoundError as err:
+        pytest.skip(f"Cannot rebuild the {record['metadata']['input']} calibration input: {err}")
+    _free_cached_models()  # one more PVGG16 on top of the cache exhausts Windows commit memory
+    values = calibrate(x, record["metadata"]["seed"], WEIGHTS_DIR, EXTERNAL_DIR)
+    print(f"\n[C_sqrt recalibrated] {values}")
+    assert values == record["c_sqrt"]
 
 
 def _sanity_batch() -> tuple[list[str], torch.Tensor]:

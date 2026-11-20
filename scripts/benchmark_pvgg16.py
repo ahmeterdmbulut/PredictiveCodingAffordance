@@ -95,7 +95,7 @@ def bench_one(net: torch.nn.Module, device: torch.device, batch: int, args: argp
         if device.type == "cuda":
             torch.cuda.empty_cache()
             torch.cuda.reset_peak_memory_stats()
-        timed_run(net, x, 1, device, swap_start)  # warm-up (kernel selection, C calibration)
+        timed_run(net, x, 1, device, swap_start)  # warm-up (kernel selection)
         t0s, steps, peaks = [], [], []
         for _ in range(args.repeats):
             t0, pc, peak = timed_run(net, x, args.T, device, swap_start)
