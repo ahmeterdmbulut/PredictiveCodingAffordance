@@ -20,6 +20,7 @@ conda create -n pcaff --override-channels -c conda-forge python=3.11
 conda activate pcaff
 pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cu130
 pip install numpy==2.4.6 pillow==13.0.0 toml==0.10.2 psutil==7.2.2 pytest==9.2.0
+pip install huggingface_hub==2.4.0 pyarrow==26.0.1
 pip install -e external/predify --no-deps
 python -m pytest tests -v -s
 python scripts/benchmark_pvgg16.py --devices cuda --batch-sizes 1 8 16 24 32
@@ -48,6 +49,21 @@ ImageNet val images in `data/imagenet_val/` and regenerate it:
 python scripts/calibrate_c_sqrt.py --input imagenet --force   # official: first 16 val images
 python scripts/calibrate_c_sqrt.py --input synthetic --force  # temporary: seeded randn
 ```
+
+### ImageNet validation (data/imagenet_val/, git-ignored)
+
+Only the validation split of `ILSVRC/imagenet-1k` on Hugging Face (accept the
+terms on the dataset page, then `hf auth login`). 14 parquet shards, 50,000
+images, 6,693,093,726 bytes (~6.7 GB; check free disk space first):
+
+```
+hf download ILSVRC/imagenet-1k --repo-type dataset --revision 49e2ee26f3810fb5a7536bbf732a7b07389a47b5 --include "data/validation-*" --local-dir data/imagenet_val
+```
+
+Shards land in `data/imagenet_val/data/validation-000NN-of-00014.parquet`.
+Columns: `image` {bytes, path}, `label` (int, torchvision class order). Rows
+are shuffled; `image.path` keeps the original filename, e.g.
+`ILSVRC2012_val_00027555_n01824575.JPEG`.
 
 ### Sanity images (data/sanity_images/, git-ignored)
 
