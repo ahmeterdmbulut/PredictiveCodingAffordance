@@ -109,6 +109,39 @@ Wikimedia answers rapid requests with HTTP 429 and curl then saves the error
 page as the .jpg: add `--fail` and space the downloads out. The tests use
 whatever JPEGs are present (the Windows machine has 4; banana.jpg got 429).
 
+## Gate 1 positive control (ImageNet val, Gaussian noise)
+
+Passed on 2026-11-21. Frozen for the affordance experiments: fixed HP set + PCoderN.
+
+```
+python scripts/run_gate1_grid.py --device cuda      # 4 configs, ~62 min each on the RTX 3060
+python scripts/analyze_pc_terms.py --device cuda    # alpha term vs other update terms, 16 images
+python scripts/summarize_gate1.py --runs <fixed_PCoderN> <tuned_PCoderN> <fixed_PCoder> <tuned_PCoder> --pc-terms <pc_terms folder>
+```
+
+- One run: `python scripts/run_gate1.py --hp-set fixed --pcoder-type PCoderN --device cuda --drift`
+  (add `--n-images 64` for a smoke run). The first `--runs` folder is the one the pass rule is applied to.
+- 2,000 Gate 1 images, batch 16, t = 0..15, sigma in {0, 0.5, 0.75, 1.0}; noise in normalized-image
+  units, no clamping, one generator per image seeded with `val_id` (same noise for every sigma and config).
+- Per-image predictions (`predictions_sigma*.npz`) are git-ignored and stay on the Windows machine;
+  `summarize_gate1.py` recomputes every metric from them and checks it against each run's `metrics.json`.
+
+Top-1 (%), t = 0 -> t = 15 (gain, paired bootstrap 95 % CI), 2,000 images:
+
+| sigma | Table S4 | fixed + PCoderN | tuned + PCoderN | fixed + PCoder | tuned + PCoder |
+|---|---|---|---|---|---|
+| 0 | 71.63 -> 71.47 | 70.90 -> 71.05 (+0.15 [-0.45, +0.75]) | 70.90 -> 70.55 (-0.35) | 70.90 -> 70.95 (+0.05) | 70.90 -> 70.55 (-0.35) |
+| 0.5 | 35.61 -> 38.59 | 34.75 -> 37.15 (+2.40 [+1.40, +3.40]) | 34.75 -> 38.65 (+3.90) | 34.75 -> 37.10 (+2.35) | 34.75 -> 38.70 (+3.95) |
+| 0.75 | 16.69 -> 18.46 | 15.10 -> 17.60 (+2.50 [+1.65, +3.40]) | 15.10 -> 18.70 (+3.60) | 15.10 -> 17.60 (+2.50) | 15.10 -> 18.70 (+3.60) |
+| 1.0 | 5.59 -> 7.05 | 4.65 -> 6.05 (+1.40 [+0.75, +2.05]) | 4.65 -> 6.65 (+2.00) | 4.65 -> 6.05 (+1.40) | 4.65 -> 6.70 (+2.05) |
+
+- The tuned set was tuned on sigma = 0.5, so its gains there are in-sample.
+- PCoder vs PCoderN differ by at most 0.25 pp: the alpha (error) term is ~1e-4..3e-3 of the
+  feedforward term with PCoderN and ~1e-9..1e-7 with PCoder (`results/gate1_pc_terms_20261121-075459`).
+- t = 0 equals plain VGG16 exactly (max |logit diff| = 0) in every run. Speed 0.46 s/image,
+  peak 4.2 GB allocated / 5.8 GB reserved.
+- Full tables, pass rule per condition and feature drift: `results/gate1_summary_20261121-075640/summary.md`.
+
 ## Upstream versions
 
 Upstream repos are cloned into `external/` (git-ignored, never edited).

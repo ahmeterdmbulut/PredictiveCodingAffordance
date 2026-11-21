@@ -33,13 +33,17 @@ improvement in object-category recognition on the same images?
   lambda = 0.1, alpha = 0.01; (b) PVGG16 tuned set from Appendix A.7 Table S2.
   (Upstream code disagrees with itself: PVGG16SeparateHP defaults, get_model()
   overrides and the mce script all use different values - do not trust them.)
-- Both sets are tried in the Gate 1 positive control on ImageNet val. The set
-  used for all affordance experiments is chosen there and frozen before looking
-  at any IIT-AFF/UMD test data.
+- FROZEN (decided after Gate 1, 2026-11-21, before any IIT-AFF/UMD data):
+  all affordance experiments use the fixed set + PCoderN (official C_sqrt).
+  The tuned set is only an optional sensitivity analysis.
 - Gradient scaling: the paper (App. A.4) describes scaled error gradients, but
   predify2021's pvgg16_shared.py uses plain PCoder while config_PVGG16.toml sets
-  gradient_scaling = true (PCoderN). Test both in the positive control and keep
-  the one that reproduces the paper.
+  gradient_scaling = true (PCoderN). Both were tested in Gate 1: both reproduce
+  the paper and give almost the same accuracy (max 0.25 pp apart), because the
+  alpha term is tiny in both (||alpha*scale*grad|| / ||beta*ff|| ~ 1e-4..3e-3
+  for PCoderN, ~1e-9..1e-7 for PCoder; results/gate1_pc_terms_20261121-075459).
+  So the gain comes from the feedback and memory terms; expect the alpha = 0
+  ablation to be close to the full model. PCoderN is kept (implements App. A.4).
 - Hyperparameters are float32 (MPS has no float64; upstream set_hyperparams()
   uses float64).
 - PCoderN sqrt(C) is fixed, never calibrated at runtime: build_pvgg16 loads it
@@ -104,6 +108,15 @@ Optional if time: PEfficientNetB0; CORnet-S as an external recurrent reference.
   (normalized-image units), no clamping. Indirect evidence: the repo has no
   Gaussian-noise accuracy script. Use our own seeded generator (upstream
   reseeds the global RNG every batch).
+  Pass rule (fixed 2026-11-20 before the run, src/gate1.check_pass_rule):
+  (a) |acc(0) - paper(0)| <= 3 pp at every sigma; (b) sigma 0.5: gain CI lower
+  bound > 0 and gain in [0.5x, 2x] of +2.98 pp; (c) sigma 0.75, 1.0: gain > 0;
+  (d) sigma 0: |gain| <= 1 pp.
+  RESULT: Gate 1 PASSED (2026-11-21) for fixed + PCoderN, 2,000 images:
+  t = 0 -> 15: 70.90 -> 71.05; 34.75 -> 37.15 (+2.40, CI [+1.40, +3.40]);
+  15.10 -> 17.60; 4.65 -> 6.05. All four rules pass
+  (results/gate1_summary_20261121-075640). Clean-image feature drift at t = 15:
+  pc1..pc5 = 0.04, 0.08, 0.12, 0.17, 0.14 (settles by t ~ 5).
 - Gate 2: decoder beats the object-mask baseline, seeds agree, and on
   clean images score(t = 10) is close to score(t = 0). If not -> Plan B1:
   image-level multi-label affordance prediction (mAP).
