@@ -1,0 +1,11 @@
+{
+  "runs": [
+    "gate1_fixed_PCoderN_n2000_20261121-000915",
+    "gate1_tuned_PCoderN_n2000_20261121-011121",
+    "gate1_fixed_PCoder_n2000_20261121-021307",
+    "gate1_tuned_PCoder_n2000_20261121-031431"
+  ],
+  "primary": "fixed_PCoderN",
+  "pc_terms": "gate1_pc_terms_20261121-075459",
+  "note": "metrics recomputed from predictions npz and checked equal to each run's metrics.json"
+}

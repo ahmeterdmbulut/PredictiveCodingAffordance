@@ -1,0 +1,149 @@
+{
+  "hp_set": "fixed",
+  "pcoder_type": "PCoderN",
+  "device": "cuda",
+  "batch_size": 16,
+  "T": 15,
+  "sigmas": [
+    0.0,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "n_images": 64,
+  "noise_seed": 0,
+  "drift": true,
+  "drift_stride": 10,
+  "n_boot": 10000,
+  "weights_dir": "C:\\Users\\aebul\\OneDrive\\Desktop\\PredictiveCodingAffordance\\weights\\predify\\weights_pvgg16_imagenet",
+  "external_dir": "C:\\Users\\aebul\\OneDrive\\Desktop\\PredictiveCodingAffordance\\external",
+  "out_root": "C:\\Users\\aebul\\OneDrive\\Desktop\\PredictiveCodingAffordance\\results",
+  "subset": "configs/imagenet_val_gate1_subset.json",
+  "val_ids": [
+    59,
+    100,
+    113,
+    114,
+    158,
+    253,
+    335,
+    350,
+    395,
+    414,
+    426,
+    429,
+    433,
+    464,
+    466,
+    468,
+    488,
+    490,
+    491,
+    516,
+    530,
+    534,
+    538,
+    542,
+    543,
+    623,
+    629,
+    663,
+    675,
+    714,
+    724,
+    743,
+    777,
+    794,
+    815,
+    851,
+    865,
+    866,
+    878,
+    900,
+    923,
+    931,
+    939,
+    1081,
+    1087,
+    1118,
+    1221,
+    1236,
+    1239,
+    1274,
+    1295,
+    1308,
+    1370,
+    1398,
+    1427,
+    1465,
+    1484,
+    1523,
+    1530,
+    1608,
+    1621,
+    1667,
+    1689,
+    1760
+  ],
+  "hp_values": {
+    "ffm": [
+      0.8,
+      0.8,
+      0.8,
+      0.8,
+      0.8
+    ],
+    "fbm": [
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ],
+    "erm": [
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01
+    ]
+  },
+  "c_sqrt": [
+    8.660253524780273,
+    66.94984436035156,
+    125.13435363769531,
+    168.78366088867188,
+    221.53256225585938
+  ],
+  "c_sqrt_file": "configs/pcoder_c_sqrt.json",
+  "preprocessing": "Resize(224) + CenterCrop(224) + ImageNet Normalize (Predify)",
+  "noise": "x + sigma * eps after Normalize, no clamping; eps ~ N(0,1) [3,224,224] from torch.Generator(CPU).manual_seed(noise_seed * 100000 + val_id); same eps for every sigma and configuration",
+  "batch_note": "plain PCoder's error step scales with 1/batch size (MSE mean over the batch), PCoderN's does not (prd.numel() / C_sqrt); all batches are full",
+  "paper_table_s4": {
+    "0.00": [
+      71.63,
+      71.47
+    ],
+    "0.50": [
+      35.61,
+      38.59
+    ],
+    "0.75": [
+      16.69,
+      18.46
+    ],
+    "1.00": [
+      5.59,
+      7.05
+    ]
+  },
+  "upstream_commits": {
+    "predify": "7538a683a383c85dd5909e7aea2b868e931f39ff",
+    "predify2021": "e9684141087cf4c5fb7ce7af437edfe4f6970bc5"
+  },
+  "torch": "2.14.1+cu130",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "python": "3.11.18",
+  "cuda_device": "NVIDIA GeForce RTX 3060 Laptop GPU",
+  "cudnn_benchmark": false
+}

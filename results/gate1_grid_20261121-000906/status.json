@@ -1,0 +1,26 @@
+[
+  {
+    "config": "fixed_PCoderN",
+    "returncode": 0,
+    "minutes": 62.1,
+    "finished": "2026-11-21T01:11:12"
+  },
+  {
+    "config": "tuned_PCoderN",
+    "returncode": 0,
+    "minutes": 61.8,
+    "finished": "2026-11-21T02:12:58"
+  },
+  {
+    "config": "fixed_PCoder",
+    "returncode": 0,
+    "minutes": 61.4,
+    "finished": "2026-11-21T03:14:22"
+  },
+  {
+    "config": "tuned_PCoder",
+    "returncode": 0,
+    "minutes": 61.4,
+    "finished": "2026-11-21T04:15:45"
+  }
+]

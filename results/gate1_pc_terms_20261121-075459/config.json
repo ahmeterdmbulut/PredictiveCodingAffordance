@@ -1,0 +1,35 @@
+{
+  "device": "cuda",
+  "n_images": 16,
+  "T": 15,
+  "sigmas": [
+    0.0,
+    0.5
+  ],
+  "noise_seed": 0,
+  "weights_dir": "C:\\Users\\aebul\\OneDrive\\Desktop\\PredictiveCodingAffordance\\weights\\predify\\weights_pvgg16_imagenet",
+  "external_dir": "C:\\Users\\aebul\\OneDrive\\Desktop\\PredictiveCodingAffordance\\external",
+  "out_root": "C:\\Users\\aebul\\OneDrive\\Desktop\\PredictiveCodingAffordance\\results",
+  "val_ids": [
+    59,
+    100,
+    113,
+    114,
+    158,
+    253,
+    335,
+    350,
+    395,
+    414,
+    426,
+    429,
+    433,
+    464,
+    466,
+    468
+  ],
+  "batch": "all n_images in one batch",
+  "terms": "ff = beta*ff, fb = lambda*fb, mem = (1-beta-lambda)*rep(t), err = alpha*scale*grad (scale = prd.numel()/C_sqrt for PCoderN, 1 for PCoder); norms per image over C,H,W; t = 1..T",
+  "torch": "2.14.1+cu130",
+  "platform": "Windows-10-10.0.26200-SP0"
+}
